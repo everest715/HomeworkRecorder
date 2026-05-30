@@ -47,10 +47,14 @@ class TimerDisplay extends StatelessWidget {
                   Theme.of(context).colorScheme.primary),
             )
           else
-            CircularProgressIndicator(
-              value: null,
-              strokeWidth: 8,
-              color: Theme.of(context).colorScheme.primary,
+            SizedBox(
+              width: 240,
+              height: 240,
+              child: CircularProgressIndicator(
+                value: 0,
+                strokeWidth: 8,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
             ),
           Text(
             _formatDuration(displaySeconds),
