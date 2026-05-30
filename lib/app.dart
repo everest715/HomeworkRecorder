@@ -1,11 +1,14 @@
+import 'package:flutter/material.dart' as flutter;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'models/user_settings.dart' as models;
 import 'pages/records/records_page.dart';
 import 'pages/timer/timer_page.dart';
 import 'pages/stats/stats_page.dart';
 import 'pages/settings/settings_page.dart';
+import 'providers/settings_provider.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -63,12 +66,32 @@ class StudyRecorderApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+    final userThemeMode = settingsAsync.valueOrNull?.themeMode;
+
+    // Convert our ThemeMode to Flutter's ThemeMode
+    flutter.ThemeMode flutterThemeMode;
+    switch (userThemeMode) {
+      case models.ThemeMode.light:
+        flutterThemeMode = flutter.ThemeMode.light;
+      case models.ThemeMode.dark:
+        flutterThemeMode = flutter.ThemeMode.dark;
+      default:
+        flutterThemeMode = flutter.ThemeMode.system;
+    }
+
     return MaterialApp.router(
       title: '学习记录器',
       theme: ThemeData(
         colorSchemeSeed: const Color(0xFF4FC3F7),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        colorSchemeSeed: const Color(0xFF4FC3F7),
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      themeMode: flutterThemeMode,
       routerConfig: router,
     );
   }
