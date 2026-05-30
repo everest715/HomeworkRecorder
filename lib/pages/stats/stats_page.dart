@@ -131,7 +131,15 @@ class _DailyBarChart extends ConsumerWidget {
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                borderData: FlBorderData(show: false),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+                    top: BorderSide.none,
+                    left: BorderSide.none,
+                    right: BorderSide.none,
+                  ),
+                ),
                 gridData: const FlGridData(show: true, drawVerticalLine: false),
               )),
             ),
