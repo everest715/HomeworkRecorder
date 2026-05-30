@@ -52,9 +52,19 @@ class _CompletionSheetState extends ConsumerState<CompletionSheet> {
             maxLines: 2,
           ),
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _save,
-            child: const Text('保存'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton(
+                onPressed: _confirmCancel,
+                child: const Text('取消'),
+              ),
+              const SizedBox(width: 16),
+              FilledButton(
+                onPressed: _save,
+                child: const Text('保存'),
+              ),
+            ],
           ),
         ],
       ),
@@ -95,5 +105,37 @@ class _CompletionSheetState extends ConsumerState<CompletionSheet> {
         Navigator.of(context).pop();
       }
     });
+  }
+
+  void _confirmCancel() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('确认取消'),
+        content: const Text('取消后不会记录这次学习情况，确定要取消吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('继续填写'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx); // 关闭对话框
+              _cancel();
+            },
+            child: const Text('确定取消'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _cancel() async {
+    // 删除已保存的学习记录（不含评分）
+    await ref.read(recordsDaoProvider).deleteRecord(widget.recordId);
+    ref.invalidate(todayRecordsProvider);
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 }
