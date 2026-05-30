@@ -8,18 +8,29 @@ part 'stats_dao.g.dart';
 class StatsDao extends DatabaseAccessor<AppDatabase> with _$StatsDaoMixin {
   StatsDao(super.db);
 
+  /// 按天聚合学习时长
   Future<List<DailyDuration>> getDailyDurations(DateTime start, DateTime end) async {
-    final query = selectOnly(studyRecords)
-      ..addColumns([studyRecords.date, studyRecords.durationSeconds.sum()])
-      ..where(studyRecords.date.isBiggerOrEqualValue(start))
-      ..where(studyRecords.date.isSmallerThanValue(end))
-      ..groupBy([studyRecords.date]);
+    // 先查出范围内所有记录，在 Dart 侧按日期聚合
+    final records = await (select(studyRecords)
+          ..where((r) => r.date.isBiggerOrEqualValue(start))
+          ..where((r) => r.date.isSmallerThanValue(end)))
+        .get();
 
-    final rows = await query.get();
-    return rows.map((row) => DailyDuration(
-      date: row.read(studyRecords.date)!,
-      totalSeconds: row.read(studyRecords.durationSeconds.sum()) ?? 0,
-    )).toList();
+    final map = <String, int>{};
+    for (final r in records) {
+      final dayKey = '${r.date.year}-${r.date.month.toString().padLeft(2, '0')}-${r.date.day.toString().padLeft(2, '0')}';
+      map[dayKey] = (map[dayKey] ?? 0) + r.durationSeconds;
+    }
+
+    final result = map.entries.map((e) {
+      final parts = e.key.split('-');
+      return DailyDuration(
+        date: DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2])),
+        totalSeconds: e.value,
+      );
+    }).toList();
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
   }
 
   Future<List<SubjectDuration>> getSubjectDurations(DateTime start, DateTime end) async {

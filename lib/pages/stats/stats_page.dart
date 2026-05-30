@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,6 +74,10 @@ class _DailyBarChart extends ConsumerWidget {
             ),
           );
         }
+        final maxMinutes = data.map((d) => d.totalSeconds / 60).reduce((a, b) => a > b ? a : b);
+        final chartMaxY = (maxMinutes * 1.2).ceilToDouble();
+        final interval = _niceInterval(chartMaxY);
+
         final spots = data
             .asMap()
             .entries
@@ -95,13 +100,20 @@ class _DailyBarChart extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: BarChart(BarChartData(
+                maxY: chartMaxY,
                 barGroups: spots,
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
-                      getTitlesWidget: (v, _) => Text('${v.toInt()}m'),
+                      interval: interval,
+                      getTitlesWidget: (v, _) {
+                        if (v >= 60) {
+                          return Text('${(v / 60).toStringAsFixed(1)}h');
+                        }
+                        return Text('${v.toInt()}m');
+                      },
                     ),
                   ),
                   bottomTitles: AxisTitles(
@@ -128,6 +140,25 @@ class _DailyBarChart extends ConsumerWidget {
       loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
       error: (_, __) => const SizedBox(height: 200, child: Center(child: Text('加载失败'))),
     );
+  }
+
+  /// 计算美观的刻度间隔
+  double _niceInterval(double maxY) {
+    if (maxY <= 0) return 1;
+    final rough = maxY / 4;
+    final magnitude = pow(10, (log(rough) / log(10)).floor()).toDouble();
+    final residual = rough / magnitude;
+    double nice;
+    if (residual <= 1.5) {
+      nice = 1 * magnitude;
+    } else if (residual <= 3) {
+      nice = 2 * magnitude;
+    } else if (residual <= 7) {
+      nice = 5 * magnitude;
+    } else {
+      nice = 10 * magnitude;
+    }
+    return nice;
   }
 }
 
