@@ -74,8 +74,9 @@ class _DailyBarChart extends ConsumerWidget {
             ),
           );
         }
-        final maxMinutes = data.map((d) => d.totalSeconds / 60).reduce((a, b) => a > b ? a : b);
-        final chartMaxY = (maxMinutes * 1.2).ceilToDouble();
+        // 统一使用秒为 Y 轴单位，避免分钟为 0 的问题
+        final maxSeconds = data.map((d) => d.totalSeconds.toDouble()).reduce((a, b) => a > b ? a : b);
+        final chartMaxY = maxSeconds * 1.2;
         final interval = _niceInterval(chartMaxY);
 
         final spots = data
@@ -85,7 +86,7 @@ class _DailyBarChart extends ConsumerWidget {
                   x: e.key,
                   barRods: [
                     BarChartRodData(
-                      toY: (e.value.totalSeconds / 60).toDouble(),
+                      toY: e.value.totalSeconds.toDouble(),
                       width: 20,
                       borderRadius: BorderRadius.circular(4),
                       color: Theme.of(context).colorScheme.primary,
@@ -100,28 +101,28 @@ class _DailyBarChart extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: BarChart(BarChartData(
-                maxY: chartMaxY,
+                maxY: chartMaxY > 0 ? chartMaxY : 1,
                 barGroups: spots,
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
+                      reservedSize: 45,
                       interval: interval,
-                      getTitlesWidget: (v, _) {
-                        if (v >= 60) {
-                          return Text('${(v / 60).toStringAsFixed(1)}h');
-                        }
-                        return Text('${v.toInt()}m');
-                      },
+                      getTitlesWidget: (v, _) => Text(_formatYLabel(v)),
                     ),
                   ),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      interval: 1,
                       getTitlesWidget: (v, _) {
-                        if (v.toInt() < data.length) {
-                          return Text(formatDate(data[v.toInt()].date));
+                        final index = v.toInt();
+                        if (index >= 0 && index < data.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(formatDate(data[index].date)),
+                          );
                         }
                         return const SizedBox.shrink();
                       },
@@ -140,6 +141,18 @@ class _DailyBarChart extends ConsumerWidget {
       loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
       error: (_, __) => const SizedBox(height: 200, child: Center(child: Text('加载失败'))),
     );
+  }
+
+  /// 根据秒数智能格式化 Y 轴标签
+  String _formatYLabel(double seconds) {
+    if (seconds <= 0) return '';
+    if (seconds >= 3600) {
+      return '${(seconds / 3600).toStringAsFixed(1)}h';
+    }
+    if (seconds >= 60) {
+      return '${(seconds / 60).toInt()}m';
+    }
+    return '${seconds.toInt()}s';
   }
 
   /// 计算美观的刻度间隔
