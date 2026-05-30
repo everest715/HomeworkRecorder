@@ -117,7 +117,7 @@ class TimerPage extends ConsumerWidget {
             children: [
               if (timerState.status == TimerStatus.idle)
                 FilledButton.icon(
-                  onPressed: timerState.subjectId != null
+                  onPressed: timerState.subjectId != null && timerState.typeId != null
                       ? () => ref.read(timerProvider.notifier).start()
                       : null,
                   icon: const Icon(Icons.play_arrow),
