@@ -1,11 +1,15 @@
-/// 格式化秒数为 "Xh Xm" 或 "Xm"
+/// 格式化秒数为 "Xh Xm"、"Xm" 或 "Xs"
 String formatDuration(int totalSeconds) {
   final hours = totalSeconds ~/ 3600;
   final minutes = (totalSeconds % 3600) ~/ 60;
+  final seconds = totalSeconds % 60;
   if (hours > 0) {
     return '${hours}h ${minutes}m';
   }
-  return '${minutes}m';
+  if (minutes > 0) {
+    return '${minutes}m';
+  }
+  return '${seconds}s';
 }
 
 /// 格式化秒数为 "MM:SS"
