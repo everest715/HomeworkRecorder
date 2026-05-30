@@ -6,6 +6,7 @@ class Subjects extends Table {
   TextColumn get icon => text()();
   TextColumn get color => text()();
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
+  BoolColumn get isHidden => boolean().withDefault(const Constant(false))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 
   @override

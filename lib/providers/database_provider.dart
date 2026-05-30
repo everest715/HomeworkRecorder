@@ -21,6 +21,12 @@ final allSubjectsProvider = FutureProvider.autoDispose<List<Subject>>((ref) asyn
   return ref.read(subjectsDaoProvider).getAllSubjects();
 });
 
+/// 响应式可见科目列表（计时页使用，不含隐藏科目）
+final visibleSubjectsProvider = FutureProvider.autoDispose<List<Subject>>((ref) async {
+  ref.watch(subjectsRefreshProvider);
+  return ref.read(subjectsDaoProvider).getVisibleSubjects();
+});
+
 /// 类型列表变更的刷新触发器
 final studyTypesRefreshProvider = StateProvider<int>((ref) => 0);
 

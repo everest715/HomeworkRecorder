@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -36,6 +36,11 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
         await _insertPresetSubjects();
         await _insertPresetStudyTypes();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.addColumn(subjects, subjects.isHidden);
+        }
       },
     );
   }

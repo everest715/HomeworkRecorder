@@ -16,8 +16,8 @@ class TimerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final timerState = ref.watch(timerProvider);
-    final subjectsAsync = ref.read(subjectsDaoProvider).getAllSubjects();
-    final typesAsync = ref.read(subjectsDaoProvider).getAllStudyTypes();
+    final subjectsAsync = ref.watch(visibleSubjectsProvider);
+    final typesAsync = ref.watch(allStudyTypesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('计时')),
@@ -25,61 +25,55 @@ class TimerPage extends ConsumerWidget {
         children: [
           const SizedBox(height: 16),
           // 科目选择
-          FutureBuilder(
-            future: subjectsAsync,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              final subjects = snapshot.data!;
-              return SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: subjects.map((s) {
-                    final selected = timerState.subjectId == s.id;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: selected,
-                        label: Text('${s.icon} ${s.name}'),
-                        onSelected: (_) => ref
-                            .read(timerProvider.notifier)
-                            .setSubject(s.id),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
+          subjectsAsync.when(
+            data: (subjects) => SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: subjects.map((s) {
+                  final selected = timerState.subjectId == s.id;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      selected: selected,
+                      label: Text('${s.icon} ${s.name}'),
+                      onSelected: (_) => ref
+                          .read(timerProvider.notifier)
+                          .setSubject(s.id),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 8),
           // 类型选择
-          FutureBuilder(
-            future: typesAsync,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              final types = snapshot.data!;
-              return SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: types.map((t) {
-                    final selected = timerState.typeId == t.id;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: selected,
-                        label: Text(t.name),
-                        onSelected: (_) => ref
-                            .read(timerProvider.notifier)
-                            .setType(t.id),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
+          typesAsync.when(
+            data: (types) => SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: types.map((t) {
+                  final selected = timerState.typeId == t.id;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      selected: selected,
+                      label: Text(t.name),
+                      onSelected: (_) => ref
+                          .read(timerProvider.notifier)
+                          .setType(t.id),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
           // 模式切换

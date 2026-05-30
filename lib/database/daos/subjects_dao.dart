@@ -14,6 +14,14 @@ class SubjectsDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  /// 获取未隐藏的科目（计时页使用）
+  Future<List<Subject>> getVisibleSubjects() {
+    return (select(subjects)
+          ..where((s) => s.isHidden.equals(false))
+          ..orderBy([(s) => OrderingTerm.asc(s.sortOrder)]))
+        .get();
+  }
+
   Future<List<StudyType>> getAllStudyTypes() {
     return (select(studyTypes)
           ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
@@ -49,5 +57,11 @@ class SubjectsDao extends DatabaseAccessor<AppDatabase>
   Future<void> updateSubjectOrder(String id, int newOrder) async {
     await (update(subjects)..where((s) => s.id.equals(id)))
         .write(SubjectsCompanion(sortOrder: Value(newOrder)));
+  }
+
+  /// 切换科目隐藏状态
+  Future<void> updateSubjectVisibility(String id, bool isHidden) async {
+    await (update(subjects)..where((s) => s.id.equals(id)))
+        .write(SubjectsCompanion(isHidden: Value(isHidden)));
   }
 }

@@ -143,8 +143,28 @@ class _SubjectManagementList extends ConsumerWidget {
           ...subjects.map((s) => ListTile(
                 leading: Text(s.icon, style: const TextStyle(fontSize: 24)),
                 title: Text(s.name),
-                trailing: s.isCustom
-                    ? IconButton(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 显示/隐藏开关（仅默认科目显示）
+                    if (!s.isCustom)
+                      IconButton(
+                        icon: Icon(
+                          s.isHidden ? Icons.visibility_off : Icons.visibility,
+                          size: 20,
+                          color: s.isHidden ? null : Theme.of(context).colorScheme.primary,
+                        ),
+                        tooltip: s.isHidden ? '显示' : '隐藏',
+                        onPressed: () async {
+                          await ref
+                              .read(subjectsDaoProvider)
+                              .updateSubjectVisibility(s.id, !s.isHidden);
+                          ref.read(subjectsRefreshProvider.notifier).state++;
+                        },
+                      ),
+                    // 删除按钮（仅自定义科目显示）
+                    if (s.isCustom)
+                      IconButton(
                         icon: const Icon(Icons.delete, size: 20),
                         onPressed: () async {
                           await ref
@@ -152,8 +172,9 @@ class _SubjectManagementList extends ConsumerWidget {
                               .deleteSubject(s.id);
                           ref.read(subjectsRefreshProvider.notifier).state++;
                         },
-                      )
-                    : null,
+                      ),
+                  ],
+                ),
               )),
           ListTile(
             leading: const Icon(Icons.add),
