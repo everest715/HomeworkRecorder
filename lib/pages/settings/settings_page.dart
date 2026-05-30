@@ -135,35 +135,35 @@ class _SubjectManagementList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder(
-      future: ref.read(subjectsDaoProvider).getAllSubjects(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
-        final subjects = snapshot.data!;
-        return Column(
-          children: [
-            ...subjects.map((s) => ListTile(
-                  leading: Text(s.icon, style: const TextStyle(fontSize: 24)),
-                  title: Text(s.name),
-                  trailing: s.isCustom
-                      ? IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () async {
-                            await ref
-                                .read(subjectsDaoProvider)
-                                .deleteSubject(s.id);
-                          },
-                        )
-                      : null,
-                )),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('添加自定义科目'),
-              onTap: () => _showAddSubjectDialog(context, ref),
-            ),
-          ],
-        );
-      },
+    final subjectsAsync = ref.watch(allSubjectsProvider);
+
+    return subjectsAsync.when(
+      data: (subjects) => Column(
+        children: [
+          ...subjects.map((s) => ListTile(
+                leading: Text(s.icon, style: const TextStyle(fontSize: 24)),
+                title: Text(s.name),
+                trailing: s.isCustom
+                    ? IconButton(
+                        icon: const Icon(Icons.delete, size: 20),
+                        onPressed: () async {
+                          await ref
+                              .read(subjectsDaoProvider)
+                              .deleteSubject(s.id);
+                          ref.read(subjectsRefreshProvider.notifier).state++;
+                        },
+                      )
+                    : null,
+              )),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('添加自定义科目'),
+            onTap: () => _showAddSubjectDialog(context, ref),
+          ),
+        ],
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -199,7 +199,9 @@ class _SubjectManagementList extends ConsumerWidget {
                         color: selectedColor,
                         isCustom: const drift.Value(true),
                       ),
-                    );
+                    ).then((_) {
+                  ref.read(subjectsRefreshProvider.notifier).state++;
+                });
                 Navigator.pop(ctx);
               }
             },
@@ -216,34 +218,34 @@ class _StudyTypeManagementList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder(
-      future: ref.read(subjectsDaoProvider).getAllStudyTypes(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
-        final types = snapshot.data!;
-        return Column(
-          children: [
-            ...types.map((t) => ListTile(
-                  title: Text(t.name),
-                  trailing: t.isCustom
-                      ? IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () async {
-                            await ref
-                                .read(subjectsDaoProvider)
-                                .deleteStudyType(t.id);
-                          },
-                        )
-                      : null,
-                )),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('添加自定义类型'),
-              onTap: () => _showAddTypeDialog(context, ref),
-            ),
-          ],
-        );
-      },
+    final typesAsync = ref.watch(allStudyTypesProvider);
+
+    return typesAsync.when(
+      data: (types) => Column(
+        children: [
+          ...types.map((t) => ListTile(
+                title: Text(t.name),
+                trailing: t.isCustom
+                    ? IconButton(
+                        icon: const Icon(Icons.delete, size: 20),
+                        onPressed: () async {
+                          await ref
+                              .read(subjectsDaoProvider)
+                              .deleteStudyType(t.id);
+                          ref.read(studyTypesRefreshProvider.notifier).state++;
+                        },
+                      )
+                    : null,
+              )),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('添加自定义类型'),
+            onTap: () => _showAddTypeDialog(context, ref),
+          ),
+        ],
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -270,7 +272,9 @@ class _StudyTypeManagementList extends ConsumerWidget {
                         name: nameController.text,
                         isCustom: const drift.Value(true),
                       ),
-                    );
+                    ).then((_) {
+                  ref.read(studyTypesRefreshProvider.notifier).state++;
+                });
                 Navigator.pop(ctx);
               }
             },
