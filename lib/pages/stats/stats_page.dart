@@ -136,7 +136,7 @@ class _DailyBarChart extends ConsumerWidget {
                   border: Border(
                     bottom: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
                     top: BorderSide.none,
-                    left: BorderSide.none,
+                    left: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
                     right: BorderSide.none,
                   ),
                 ),
