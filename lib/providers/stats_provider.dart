@@ -10,6 +10,9 @@ final statsViewRangeProvider =
 final statsStartDateProvider =
     StateProvider<DateTime>((ref) => _startOfCurrentWeek());
 
+/// 统计数据变更的刷新触发器（记录变更时 +1 即可刷新所有统计图）
+final statsRefreshProvider = StateProvider<int>((ref) => 0);
+
 DateTime _startOfCurrentWeek() {
   final now = DateTime.now();
   return now.subtract(Duration(days: now.weekday - 1));
@@ -17,6 +20,7 @@ DateTime _startOfCurrentWeek() {
 
 final dailyDurationsProvider =
     FutureProvider.autoDispose<List<DailyDuration>>((ref) async {
+  ref.watch(statsRefreshProvider); // 记录变更时自动重新查询
   final dao = ref.watch(statsDaoProvider);
   final start = ref.watch(statsStartDateProvider);
   final range = ref.watch(statsViewRangeProvider);
@@ -26,6 +30,7 @@ final dailyDurationsProvider =
 
 final subjectDurationsProvider =
     FutureProvider.autoDispose<List<SubjectDuration>>((ref) async {
+  ref.watch(statsRefreshProvider); // 记录变更时自动重新查询
   final dao = ref.watch(statsDaoProvider);
   final start = ref.watch(statsStartDateProvider);
   final range = ref.watch(statsViewRangeProvider);
@@ -35,6 +40,7 @@ final subjectDurationsProvider =
 
 final averageRatingsProvider =
     FutureProvider.autoDispose<List<AverageRatings>>((ref) async {
+  ref.watch(statsRefreshProvider); // 记录变更时自动重新查询
   final dao = ref.watch(statsDaoProvider);
   final start = ref.watch(statsStartDateProvider);
   final range = ref.watch(statsViewRangeProvider);

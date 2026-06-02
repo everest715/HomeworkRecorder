@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' as drift;
 import '../../database/app_database.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/records_provider.dart';
+import '../../providers/stats_provider.dart';
 
 class CompletionSheet extends ConsumerStatefulWidget {
   final String recordId;
@@ -101,6 +102,7 @@ class _CompletionSheetState extends ConsumerState<CompletionSheet> {
     );
     ref.read(recordsDaoProvider).insertRating(rating).then((_) {
       ref.invalidate(todayRecordsProvider);
+      ref.read(statsRefreshProvider.notifier).state++; // 触发统计页刷新
       if (context.mounted) {
         Navigator.of(context).pop();
       }
@@ -134,6 +136,7 @@ class _CompletionSheetState extends ConsumerState<CompletionSheet> {
     // 删除已保存的学习记录（不含评分）
     await ref.read(recordsDaoProvider).deleteRecord(widget.recordId);
     ref.invalidate(todayRecordsProvider);
+    ref.read(statsRefreshProvider.notifier).state++; // 触发统计页刷新
     if (context.mounted) {
       Navigator.of(context).pop();
     }
