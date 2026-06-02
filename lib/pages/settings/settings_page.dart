@@ -95,14 +95,24 @@ class SettingsPage extends ConsumerWidget {
             const Divider(),
 
             // 科目管理
-            const _SectionTitle('科目管理'),
-            const _SubjectManagementList(),
+            ExpansionTile(
+              title: const Text('科目管理'),
+              initiallyExpanded: true,
+              children: const [
+                _SubjectManagementList(),
+              ],
+            ),
 
             const Divider(),
 
             // 类型管理
-            const _SectionTitle('类型管理'),
-            const _StudyTypeManagementList(),
+            ExpansionTile(
+              title: const Text('类型管理'),
+              initiallyExpanded: true,
+              children: const [
+                _StudyTypeManagementList(),
+              ],
+            ),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),

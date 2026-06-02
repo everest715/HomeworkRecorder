@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="homework_recorder"
+        android:label="学习记录器"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
